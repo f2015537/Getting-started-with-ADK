@@ -69,15 +69,25 @@ MCP_SERVER_PATH=/absolute/path/to/my_adk_mcp_server.py
 
 ## Running the agent
 
+**Terminal (CLI):**
+
 ```bash
 adk run pilot_agent
 ```
 
-The agent will start, launch the MCP server as a subprocess, and be ready to accept instructions such as:
+**Browser (Web UI):**
+
+```bash
+adk web
+```
+
+Then open [http://localhost:8000](http://localhost:8000) in your browser and select `pilot_agent` from the dropdown.
+
+The agent will launch the MCP server as a subprocess and be ready to accept instructions such as:
 
 ```
 > Create a file called notes.txt
-> List the files in the current directory
+> Create a file called report.md with content "Hello, World!"
 ```
 
 ---
