@@ -50,12 +50,18 @@ pip install -r requirements.txt
 
 ### Environment variables
 
-Create `pilot_agent/.env`:
+Copy the example file and fill in your values:
+
+```bash
+cp pilot_agent/.env.example pilot_agent/.env
+```
 
 ```env
+GOOGLE_GENAI_USE_VERTEXAI=FALSE
 GOOGLE_API_KEY=your_google_api_key
 ANTHROPIC_API_KEY=your_anthropic_api_key
-GITHUB_TOKEN=your_github_pat        # needs public_repo scope
+GITHUB_TOKEN=your_github_pat           # needs public_repo scope
+MCP_SERVER_PATH=/absolute/path/to/my_adk_mcp_server.py
 ```
 
 ---
@@ -93,6 +99,7 @@ The agent will start, launch the MCP server as a subprocess, and be ready to acc
 .
 ├── pilot_agent/
 │   ├── agent.py              # ADK agent definition (MCP client)
+│   ├── .env.example          # Environment variable template
 │   ├── .env                  # API keys (not committed)
 │   └── __init__.py
 ├── my_adk_mcp_server.py      # Custom MCP server wrapping ADK tools
