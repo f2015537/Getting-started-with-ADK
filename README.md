@@ -1,4 +1,4 @@
-# Agentic Bootcamp
+# Building Agents with Google ADK
 
 A hands-on workspace for building agentic AI applications using [Google ADK](https://google.github.io/adk-docs/) and the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/).
 
