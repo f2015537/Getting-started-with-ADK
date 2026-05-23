@@ -19,9 +19,16 @@ User
 ```
 
 - The **agent** (`pilot_agent/agent.py`) is powered by `claude-sonnet-4-6` via LiteLLM and connects to a custom MCP server over stdio.
-- The **MCP server** (`my_adk_mcp_server.py`) wraps an ADK `FunctionTool` and exposes it to any MCP-compatible client — demonstrating how to bridge ADK tools into the broader MCP ecosystem.
+- The **MCP server** (`my_adk_mcp_server.py`) wraps multiple ADK `FunctionTool`s and exposes them to any MCP-compatible client — demonstrating how to bridge ADK tools into the broader MCP ecosystem.
 
 This pattern is useful when you want to reuse ADK tools across different agents or frameworks without rewriting them.
+
+**Tools exposed by the MCP server:**
+
+| Tool | Description |
+|---|---|
+| `create_file` | Creates a new empty file with the given name |
+| `create_file_with_content` | Creates a new file and writes content to it in one step |
 
 ---
 

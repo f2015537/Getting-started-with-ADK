@@ -40,12 +40,40 @@ def create_file(filename: str) -> str:
    except Exception as e:
        return f"Error creating file '{filename}': {e}"
 
+def create_file_with_content(filename: str, content: str) -> str:
+   """
+   Creates a new file with the specified name and content in the current directory.
+   Args:
+       filename: The name of the file to create (e.g., 'educosys.txt').
+       content: The content to write to the file.
+      
+   Returns:
+       A success or error message confirming the file status.
+   Raises:
+       FileNotFoundError: If the file does not exist.
+       PermissionError: If the file cannot be written to due to permissions.
+       OSError: If there is an unexpected error during writing.
+   """
+   try:
+       if os.path.exists(filename):
+           return f"Error: File '{filename}' already exists. No action taken."
+       else:
+           with open(filename, "w") as f:
+               f.write(content)
+           return f"Successfully created file: '{os.path.abspath(filename)}'."
+   except Exception as e:
+       return f"Error creating file '{filename}': {e}"
+
+
 # --- Prepare the ADK Tool ---
 # Instantiate the ADK tool you want to expose.
 # This tool will be wrapped and called by the MCP server.
-print("Initializing ADK load_web_page tool...")
-adk_tool_to_expose = FunctionTool(create_file)
-print(f"ADK tool '{adk_tool_to_expose.name}' initialized and ready to be exposed via MCP.")
+print("Initializing ADK create_file tool...")
+adk_tool_to_expose1 = FunctionTool(create_file)
+print(f"ADK tool '{adk_tool_to_expose1.name}' initialized and ready to be exposed via MCP.")
+print("Initializing ADK create_file_with_content tool...")
+adk_tool_to_expose2 = FunctionTool(create_file_with_content)
+print(f"ADK tool '{adk_tool_to_expose2.name}' initialized and ready to be exposed via MCP.")
 # --- End ADK Tool Prep ---
 
 # --- MCP Server Setup ---
@@ -59,9 +87,11 @@ async def list_mcp_tools() -> list[mcp_types.Tool]:
     """MCP handler to list tools this server exposes."""
     print("MCP Server: Received list_tools request.")
     # Convert the ADK tool's definition to the MCP Tool schema format
-    mcp_tool_schema = adk_to_mcp_tool_type(adk_tool_to_expose)
-    print(f"MCP Server: Advertising tool: {mcp_tool_schema.name}")
-    return [mcp_tool_schema]
+    mcp_tool_schema1 = adk_to_mcp_tool_type(adk_tool_to_expose1)
+    mcp_tool_schema2 = adk_to_mcp_tool_type(adk_tool_to_expose2)
+    print(f"MCP Server: Advertising tool: {mcp_tool_schema1.name}")
+    print(f"MCP Server: Advertising tool: {mcp_tool_schema2.name}")
+    return [mcp_tool_schema1, mcp_tool_schema2]
 
 # Implement the MCP server's handler to execute a tool call
 @app.call_tool()
@@ -72,14 +102,14 @@ async def call_mcp_tool(
     print(f"MCP Server: Received call_tool request for '{name}' with args: {arguments}")
 
     # Check if the requested tool name matches our wrapped ADK tool
-    if name == adk_tool_to_expose.name:
+    if name == adk_tool_to_expose1.name:
         try:
             # Execute the ADK tool's run_async method.
             # Note: tool_context is None here because this MCP server is
             # running the ADK tool outside of a full ADK Runner invocation.
             # If the ADK tool requires ToolContext features (like state or auth),
             # this direct invocation might need more sophisticated handling.
-            adk_tool_response = await adk_tool_to_expose.run_async(
+            adk_tool_response = await adk_tool_to_expose1.run_async(
                 args=arguments,
                 tool_context=None,
             )
@@ -95,6 +125,19 @@ async def call_mcp_tool(
         except Exception as e:
             print(f"MCP Server: Error executing ADK tool '{name}': {e}")
             # Return an error message in MCP format
+            error_text = json.dumps({"error": f"Failed to execute tool '{name}': {str(e)}"})
+            return [mcp_types.TextContent(type="text", text=error_text)]
+    elif name == adk_tool_to_expose2.name:
+        try:
+            adk_tool_response = await adk_tool_to_expose2.run_async(
+                args=arguments,
+                tool_context=None,
+            )
+            print(f"MCP Server: ADK tool '{name}' executed. Response: {adk_tool_response}")
+            response_text = json.dumps(adk_tool_response, indent=2)
+            return [mcp_types.TextContent(type="text", text=response_text)]
+        except Exception as e:
+            print(f"MCP Server: Error executing ADK tool '{name}': {e}")
             error_text = json.dumps({"error": f"Failed to execute tool '{name}': {str(e)}"})
             return [mcp_types.TextContent(type="text", text=error_text)]
     else:
