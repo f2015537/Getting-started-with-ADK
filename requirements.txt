@@ -1,0 +1,6 @@
+google-cloud-resource-manager
+google-adk
+litellm
+black
+mcp
+beautifulsoup4
