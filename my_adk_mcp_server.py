@@ -5,64 +5,67 @@ import os
 from dotenv import load_dotenv
 
 # MCP Server Imports
-from mcp import types as mcp_types # Use alias to avoid conflict
+from mcp import types as mcp_types  # Use alias to avoid conflict
 from mcp.server.lowlevel import Server, NotificationOptions
 from mcp.server.models import InitializationOptions
-import mcp.server.stdio # For running as a stdio server
+import mcp.server.stdio  # For running as a stdio server
 
 # ADK Tool Imports
 from google.adk.tools.function_tool import FunctionTool
-from google.adk.tools.load_web_page import load_web_page # Example ADK tool
+from google.adk.tools.load_web_page import load_web_page  # Example ADK tool
+
 # ADK <-> MCP Conversion Utility
 from google.adk.tools.mcp_tool.conversion_utils import adk_to_mcp_tool_type
 
 # --- Load Environment Variables (If ADK tools need them, e.g., API keys) ---
-load_dotenv() # Create a .env file in the same directory if needed
+load_dotenv()  # Create a .env file in the same directory if needed
+
 
 def create_file(filename: str) -> str:
-   """
-   Creates a new, empty file with the specified name in the current directory.
-  
-   Args:
-       filename: The name of the file to create (e.g., 'educosys.txt').
-      
-   Returns:
-       A success or error message confirming the file status.
-   """
-   try:
-       if os.path.exists(filename):
-           return f"Error: File '{filename}' already exists. No action taken."
-       else:
-           with open(filename, "w") as f:
-               pass
-           return f"Successfully created empty file: '{os.path.abspath(filename)}'."
-  
-   except Exception as e:
-       return f"Error creating file '{filename}': {e}"
+    """
+    Creates a new, empty file with the specified name in the current directory.
+
+    Args:
+        filename: The name of the file to create (e.g., 'educosys.txt').
+
+    Returns:
+        A success or error message confirming the file status.
+    """
+    try:
+        if os.path.exists(filename):
+            return f"Error: File '{filename}' already exists. No action taken."
+        else:
+            with open(filename, "w") as f:
+                pass
+            return f"Successfully created empty file: '{os.path.abspath(filename)}'."
+
+    except Exception as e:
+        return f"Error creating file '{filename}': {e}"
+
 
 def create_file_with_content(filename: str, content: str) -> str:
-   """
-   Creates a new file with the specified name and content in the current directory.
-   Args:
-       filename: The name of the file to create (e.g., 'educosys.txt').
-       content: The content to write to the file.
-      
-   Returns:
-       A success or error message confirming the file status.
-   Raises:
-       FileNotFoundError: If the file does not exist.
-       PermissionError: If the file cannot be written to due to permissions.
-       OSError: If there is an unexpected error during writing.
-   """
-   try:
-       if os.path.exists(filename):
-           return f"Error: File '{filename}' already exists. No action taken."
-       else:
-           with open(filename, "w") as f:
-               f.write(content)
-           return f"Successfully created file: '{os.path.abspath(filename)}'."
-   except Exception as e:
-       return f"Error creating file '{filename}': {e}"
+    """
+    Creates a new file with the specified name and content in the current directory.
+    Args:
+        filename: The name of the file to create (e.g., 'educosys.txt').
+        content: The content to write to the file.
+
+    Returns:
+        A success or error message confirming the file status.
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        PermissionError: If the file cannot be written to due to permissions.
+        OSError: If there is an unexpected error during writing.
+    """
+    try:
+        if os.path.exists(filename):
+            return f"Error: File '{filename}' already exists. No action taken."
+        else:
+            with open(filename, "w") as f:
+                f.write(content)
+            return f"Successfully created file: '{os.path.abspath(filename)}'."
+    except Exception as e:
+        return f"Error creating file '{filename}': {e}"
 
 
 # --- Prepare the ADK Tool ---
@@ -70,16 +73,21 @@ def create_file_with_content(filename: str, content: str) -> str:
 # This tool will be wrapped and called by the MCP server.
 print("Initializing ADK create_file tool...")
 adk_tool_to_expose1 = FunctionTool(create_file)
-print(f"ADK tool '{adk_tool_to_expose1.name}' initialized and ready to be exposed via MCP.")
+print(
+    f"ADK tool '{adk_tool_to_expose1.name}' initialized and ready to be exposed via MCP."
+)
 print("Initializing ADK create_file_with_content tool...")
 adk_tool_to_expose2 = FunctionTool(create_file_with_content)
-print(f"ADK tool '{adk_tool_to_expose2.name}' initialized and ready to be exposed via MCP.")
+print(
+    f"ADK tool '{adk_tool_to_expose2.name}' initialized and ready to be exposed via MCP."
+)
 # --- End ADK Tool Prep ---
 
 # --- MCP Server Setup ---
 print("Creating MCP Server instance...")
 # Create a named MCP Server instance using the mcp.server library
 app = Server("adk-tool-exposing-mcp-server")
+
 
 # Implement the MCP server's handler to list available tools
 @app.list_tools()
@@ -93,11 +101,12 @@ async def list_mcp_tools() -> list[mcp_types.Tool]:
     print(f"MCP Server: Advertising tool: {mcp_tool_schema2.name}")
     return [mcp_tool_schema1, mcp_tool_schema2]
 
+
 # Implement the MCP server's handler to execute a tool call
 @app.call_tool()
 async def call_mcp_tool(
     name: str, arguments: dict
-) -> list[mcp_types.Content]: # MCP uses mcp_types.Content
+) -> list[mcp_types.Content]:  # MCP uses mcp_types.Content
     """MCP handler to execute a tool call requested by an MCP client."""
     print(f"MCP Server: Received call_tool request for '{name}' with args: {arguments}")
 
@@ -113,7 +122,9 @@ async def call_mcp_tool(
                 args=arguments,
                 tool_context=None,
             )
-            print(f"MCP Server: ADK tool '{name}' executed. Response: {adk_tool_response}")
+            print(
+                f"MCP Server: ADK tool '{name}' executed. Response: {adk_tool_response}"
+            )
 
             # Format the ADK tool's response (often a dict) into an MCP-compliant format.
             # Here, we serialize the response dictionary as a JSON string within TextContent.
@@ -125,7 +136,9 @@ async def call_mcp_tool(
         except Exception as e:
             print(f"MCP Server: Error executing ADK tool '{name}': {e}")
             # Return an error message in MCP format
-            error_text = json.dumps({"error": f"Failed to execute tool '{name}': {str(e)}"})
+            error_text = json.dumps(
+                {"error": f"Failed to execute tool '{name}': {str(e)}"}
+            )
             return [mcp_types.TextContent(type="text", text=error_text)]
     elif name == adk_tool_to_expose2.name:
         try:
@@ -133,18 +146,25 @@ async def call_mcp_tool(
                 args=arguments,
                 tool_context=None,
             )
-            print(f"MCP Server: ADK tool '{name}' executed. Response: {adk_tool_response}")
+            print(
+                f"MCP Server: ADK tool '{name}' executed. Response: {adk_tool_response}"
+            )
             response_text = json.dumps(adk_tool_response, indent=2)
             return [mcp_types.TextContent(type="text", text=response_text)]
         except Exception as e:
             print(f"MCP Server: Error executing ADK tool '{name}': {e}")
-            error_text = json.dumps({"error": f"Failed to execute tool '{name}': {str(e)}"})
+            error_text = json.dumps(
+                {"error": f"Failed to execute tool '{name}': {str(e)}"}
+            )
             return [mcp_types.TextContent(type="text", text=error_text)]
     else:
         # Handle calls to unknown tools
         print(f"MCP Server: Tool '{name}' not found/exposed by this server.")
-        error_text = json.dumps({"error": f"Tool '{name}' not implemented by this server."})
+        error_text = json.dumps(
+            {"error": f"Tool '{name}' not implemented by this server."}
+        )
         return [mcp_types.TextContent(type="text", text=error_text)]
+
 
 # --- MCP Server Runner ---
 async def run_mcp_stdio_server():
@@ -156,7 +176,7 @@ async def run_mcp_stdio_server():
             read_stream,
             write_stream,
             InitializationOptions(
-                server_name=app.name, # Use the server name defined above
+                server_name=app.name,  # Use the server name defined above
                 server_version="0.1.0",
                 capabilities=app.get_capabilities(
                     # Define server capabilities - consult MCP docs for options
@@ -166,6 +186,7 @@ async def run_mcp_stdio_server():
             ),
         )
         print("MCP Stdio Server: Run loop finished or client disconnected.")
+
 
 if __name__ == "__main__":
     print("Launching MCP Server to expose ADK tools via stdio...")
