@@ -15,7 +15,8 @@ User
  └─► ADK LlmAgent (Claude Sonnet via LiteLLM)
       └─► McpToolset (MCP client)
            └─► my_adk_mcp_server.py (custom MCP server)
-                └─► ADK FunctionTool (create_file)
+                ├─► ADK FunctionTool (create_file)
+                └─► ADK FunctionTool (create_file_with_content)
 ```
 
 - The **agent** (`pilot_agent/agent.py`) is powered by `claude-sonnet-4-6` via LiteLLM and connects to a custom MCP server over stdio.
